@@ -7,7 +7,7 @@
     <ProjectGuid>{9D834C50-65CB-4414-8789-5E1A029043DC}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>_007Service</RootNamespace>
-    <AssemblyName>_007Service</AssemblyName>
+    <AssemblyName>007Service</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\007GameManagerLibrary\_007GameLibrary.csproj">
+      <Project>{58d03985-26de-4a77-8d5d-d363b4b4125f}</Project>
+      <Name>_007GameLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
