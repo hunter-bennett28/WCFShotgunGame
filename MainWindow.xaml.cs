@@ -27,27 +27,28 @@ namespace _007Game
 
         private void onShootClick(object sender, RoutedEventArgs e)
         {
-
+            //TODO: Register action as a shoot
         }
 
         private void onReloadClick(object sender, RoutedEventArgs e)
         {
-
+            //TODO: Register action as a reload
         }
 
         private void onBlockClick(object sender, RoutedEventArgs e)
         {
-
+            //TODO: Register the action as a block and send to the manager
         }
 
         private void onStartClick(object sender, RoutedEventArgs e)
         {
-
+            //TODO: Initiate the game (and notify all players), then display proper screen
         }
 
         private void onJoinClick(object sender, RoutedEventArgs e)
         {
-
+            //TODO: Register with the game manager and wait until a player starts the game
+            //      Check if there is a game available
         }
     }
 }

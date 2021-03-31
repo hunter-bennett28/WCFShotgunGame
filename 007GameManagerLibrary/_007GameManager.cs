@@ -30,7 +30,7 @@ namespace _007GameLibrary
         [OperationContract(IsOneWay = true)]
         void Leave(string name);
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract]
         bool StartGame();
 
         [OperationContract(IsOneWay = true)]
