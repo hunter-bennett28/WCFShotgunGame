@@ -24,5 +24,30 @@ namespace _007Game
         {
             InitializeComponent();
         }
+
+        private void onShootClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void onReloadClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void onBlockClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void onStartClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void onJoinClick(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
