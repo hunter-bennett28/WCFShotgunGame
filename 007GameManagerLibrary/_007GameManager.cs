@@ -19,6 +19,9 @@ namespace _007GameLibrary
 
         [OperationContract(IsOneWay = true)]
         void SendRoundResults(string result, int damageTaken);
+
+        [OperationContract(IsOneWay = true)]
+        void ResetRound();
     }
 
     [ServiceContract(CallbackContract = typeof(ICallback))]
@@ -59,12 +62,18 @@ namespace _007GameLibrary
                 return "Name already in use.";
             else
             {
+                Console.WriteLine($"{name} joining");
+
                 // Retrieve client's callback proxy and add user
                 ICallback cb = OperationContext.Current.GetCallbackChannel<ICallback>();
                 callbacks.Add(name, cb);
+
+                //Notify all clients of update
+                Console.WriteLine("Notifying players");
+                NotifyPlayers();
+
                 return null;
             }
-
         }
 
         /// <summary>
@@ -73,9 +82,22 @@ namespace _007GameLibrary
         /// <param name="name">Use alias</param>
         public void Leave(string name)
         {
+            Console.WriteLine($"User left");
             if (callbacks.ContainsKey(name))
             {
+                Console.WriteLine($"{name} is leaving the callbacks");
                 callbacks.Remove(name);
+                NotifyPlayers();
+
+                //Reset the round as someone might have selected them as a target
+                playerRounds.Clear();
+
+                if (callbacks.Count > 1)
+                    foreach (var cb in callbacks.Values)
+                        cb.ResetRound();
+                else
+                    callbacks.First().Value.SendRoundResults("You are the last player standing!", 0);
+                
             }
         }
 
@@ -114,6 +136,8 @@ namespace _007GameLibrary
             if (playerRounds.Count != callbacks.Count)
                 return;
 
+            Console.WriteLine("\nProcessing round");
+
             // Process all shots taken by players
             foreach (var playerRound in playerRounds.Values)
                 if (playerRound.Action == PlayerActions.Shoot)
@@ -124,6 +148,40 @@ namespace _007GameLibrary
             {
                 PlayerRound round = playerRounds[cb.Key];
                 cb.Value.SendRoundResults(round.GetResult(), round.HealthLost);
+            }
+
+            //Update the players on each client as some might have left/died during the turn
+            foreach (var cb in callbacks)
+            {
+                cb.Value.SendAllPlayers(callbacks.Keys.ToArray());
+            }
+
+            playerRounds.Clear();
+            Console.WriteLine($"Players remaining: {callbacks.Count}");
+
+            //Notify the last user
+            if (callbacks.Count == 1)
+                callbacks.Values.First().SendRoundResults("You are the last player standing!", 0);
+        }
+
+        // ------------- Helper Methods -------------
+
+        /// <summary>
+        /// Notify all players of an updated player list
+        /// </summary>
+        public void NotifyPlayers()
+        {
+            //Get the string array
+            string[] players = callbacks.Keys.ToArray();
+            foreach(string player in players)
+                Console.WriteLine(player);
+
+            Console.WriteLine($"Notifying updated players:");
+            //Array.ForEach(players, Console.Write);
+            Console.WriteLine($"\nCallbacks to make: {callbacks.Count}\nPlayers in lobby: {players.Length}");
+            foreach (ICallback callback in callbacks.Values)
+            {
+                callback.SendAllPlayers(players);
             }
         }
     }

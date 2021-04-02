@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:_007Game"
         mc:Ignorable="d"
+        ResizeMode="NoResize"
+        Closing="Window_Closing"
         Title="007 Game" Height="450" Width="800">
     <Grid>
         <!--Images-->
@@ -27,9 +29,9 @@
                 <!--Players Form-->
                 <GroupBox>
                     <Grid Background="White" Margin="482,35,30,30">
-                        <Label Foreground="Red" FontSize="22" Margin="89,0,89,301" HorizontalAlignment="Center" FontStyle="Italic" RenderTransformOrigin="3.154,0.353">Players</Label>
-                        <ListBox HorizontalAlignment="Left" Margin="10,39,0,51" x:Name="listMessages" Width="236" IsEnabled="False" />
-                        <Button Content="Start Game" Height="28" Background="Red" Foreground="White" HorizontalAlignment="Center" IsEnabled="True" Margin="89,302,77,10" Name="buttonStart" VerticalAlignment="Center" Width="90" Click="onStartClick" RenderTransformOrigin="-0.323,0.563" />
+                        <Label Foreground="Red" FontSize="22" Margin="74,0,93.6,289.4" HorizontalAlignment="Center" FontStyle="Italic" RenderTransformOrigin="3.154,0.353" Width="90">Players</Label>
+                        <ListBox HorizontalAlignment="Left" Margin="10,39,0,51" x:Name="listPlayers" Width="236" IsEnabled="False" />
+                        <Button Content="Start Game" Height="28" Background="Red" IsEnabled="False" Foreground="White" HorizontalAlignment="Center" Margin="89,302,77,10" Name="buttonStart" VerticalAlignment="Center" Width="90" Click="onStartClick" RenderTransformOrigin="-0.323,0.563" />
                     </Grid>
                 </GroupBox>
             </Grid>
@@ -45,19 +47,21 @@
                 <Label Margin="0,50,187,210" FontSize="22" FontStyle="Italic" Name="ammoLabel" Content="2" HorizontalAlignment="Right" />
                 <GroupBox Name="ButtonBox" Margin="0,-24,0,24" BorderThickness="0">
                     <Grid>
-                        <Button Margin="100,127,420,66" Background="White" Click="onShootClick">
+                        <Button Margin="100,127,419.6,41" Background="White" Click="onShootClick" Name="buttonShoot">
                             <StackPanel>
                                 <Image Source="./Assets/Pistol.png" Height="62" Width="86" />
                                 <Label HorizontalAlignment="Center" FontSize="16">Shoot</Label>
                             </StackPanel>
                         </Button>
-                        <Button Margin="260,127,260,66" Background="White" Click="onReloadClick">
+                        <ComboBox Name="targetComboBox" Margin="125,230,444.6,41"/>
+
+                        <Button Margin="260,127,259.6,41" Background="White" Click="onReloadClick" Name="buttonReload">
                             <StackPanel>
                                 <Image Source="./Assets/PistolMagazine.png" Height="63" Width="95" />
                                 <Label HorizontalAlignment="Center" FontSize="16">Reload</Label>
                             </StackPanel>
                         </Button>
-                        <Button Margin="420,127,100,66" Background="White" Click="onBlockClick">
+                        <Button Margin="420,127,99.6,41" Background="White" Click="onBlockClick" Name="buttonBlock">
                             <StackPanel>
                                 <Image Source="./Assets/Shield.png" Height="62" Width="86" />
                                 <Label HorizontalAlignment="Center" FontSize="16">Block</Label>
