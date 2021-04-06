@@ -270,25 +270,6 @@ namespace _007Game
             }
         }
 
-        /// <summary>
-        /// Adds a result to the list view and scrolls down as needed
-        /// </summary>
-        /// <param name="message"></param>
-        //public void AddStatusMessage(string message)
-        //{
-        //    StatusMessages.Items.Add(message);
-        //    //StatusMessages.SelectedIndex = StatusMessages.Items.Count - 1;
-        //    //StatusMessages.ScrollIntoView(StatusMessages.SelectedItem);
-        //    ListBoxAutomationPeer svAutomation = (ListBoxAutomationPeer)ScrollViewerAutomationPeer.CreatePeerForElement(StatusMessages);
-
-        //    IScrollProvider scrollInterface = (IScrollProvider)svAutomation.GetPattern(PatternInterface.Scroll);
-        //    System.Windows.Automation.ScrollAmount scrollVertical = System.Windows.Automation.ScrollAmount.LargeIncrement;
-        //    System.Windows.Automation.ScrollAmount scrollHorizontal = System.Windows.Automation.ScrollAmount.NoAmount;
-        //    //If the vertical scroller is not available, the operation cannot be performed, which will raise an exception. 
-        //    if (scrollInterface.VerticallyScrollable)
-        //        scrollInterface.Scroll(scrollHorizontal, scrollVertical);
-        //}
-
         public delegate void ResetRoundDelegate();
 
         /// <summary>
@@ -305,11 +286,6 @@ namespace _007Game
             }
 
             EnableActionButtons();
-            //MessageBox.Show(
-            //    "A player has left! This round has reset",
-            //    "Game Manager",
-            //    MessageBoxButton.OK,
-            //    MessageBoxImage.Exclamation);
             ResultsText.Content = "A player has left! This round has reset";
 
             //Reset the users health/ammo if there was a current action
