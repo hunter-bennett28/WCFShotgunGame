@@ -59,6 +59,7 @@ namespace _007Game
 
                     currentAction = (int)PlayerActions.Shoot;
                     DisableActionButtons();
+                    WaitingBox.Visibility = Visibility.Visible;
                     RefreshUI();
                 }
                 else
@@ -87,6 +88,7 @@ namespace _007Game
             ++ammo;
             currentAction = (int)PlayerActions.Reload;
             DisableActionButtons();
+            WaitingBox.Visibility = Visibility.Visible;
             RefreshUI();
         }
 
@@ -97,10 +99,10 @@ namespace _007Game
         /// <param name="e">The event args</param>
         private void onBlockClick(object sender, RoutedEventArgs e)
         {
-            //TODO: Register the action as a block and send to the manager
             gameManager.TakeAction(user, PlayerActions.Block);
             currentAction = (int)PlayerActions.Block;
             DisableActionButtons();
+            WaitingBox.Visibility = Visibility.Visible;
             RefreshUI();
         }
 
@@ -111,7 +113,6 @@ namespace _007Game
         /// <param name="e">The event args</param>
         private void onStartClick(object sender, RoutedEventArgs e)
         {
-            //TODO: Initiate the game (and notify all players), then display proper screen
             if (!gameManager.StartGame())
             {
                 Console.WriteLine("Game did not start");
@@ -148,6 +149,7 @@ namespace _007Game
                     buttonJoin.IsEnabled = false;
                     buttonStart.IsEnabled = true;
                     userName.IsEnabled = false;
+                    PlayersViewBox.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception err)
@@ -232,38 +234,60 @@ namespace _007Game
             //Update health and the current action
             currentAction = -1;
             health = health - damageTaken < 0 ? 0 : health - damageTaken;
+            WaitingBox.Visibility = Visibility.Hidden;
             RefreshUI();
 
             //Check if the player won (in the event of a tie, it will just show that both died)
-            if (result == "You are the last player standing!")
+            if (health > 0 && result == "You are the last player standing!")
             {
-                MessageBox.Show(
-              result,
-              $"{user} Round Results",
-              MessageBoxButton.OK,
-              MessageBoxImage.Information);
+                Task.Run(() => {
+                    MessageBox.Show(
+                        result,
+                        $"{user} Round Results",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                        );
+                });
                 ResetGameState();
             }
             else
             {
-                MessageBox.Show(
-                  result != "" ? result : "You took no damage!",
-                  $"{user} Round Results",
-                  MessageBoxButton.OK,
-                  MessageBoxImage.Information);
+                ResultsText.Content = result != "" ? result : "You took no damage!";
                 EnableActionButtons();
 
                 if (health <= 0)
                 {
-                    MessageBox.Show(
-                      "You have died!",
-                       $"{user} Round Results",
-                      MessageBoxButton.OK,
-                      MessageBoxImage.Information);
-                    ResetGameState();
+                    Task.Run(() =>
+                    {
+                        MessageBox.Show(
+                          "You have died!",
+                           $"{user} Round Results",
+                          MessageBoxButton.OK,
+                          MessageBoxImage.Information);
+                    });
+                    ResetGameState(true);
                 }
             }
         }
+
+        /// <summary>
+        /// Adds a result to the list view and scrolls down as needed
+        /// </summary>
+        /// <param name="message"></param>
+        //public void AddStatusMessage(string message)
+        //{
+        //    StatusMessages.Items.Add(message);
+        //    //StatusMessages.SelectedIndex = StatusMessages.Items.Count - 1;
+        //    //StatusMessages.ScrollIntoView(StatusMessages.SelectedItem);
+        //    ListBoxAutomationPeer svAutomation = (ListBoxAutomationPeer)ScrollViewerAutomationPeer.CreatePeerForElement(StatusMessages);
+
+        //    IScrollProvider scrollInterface = (IScrollProvider)svAutomation.GetPattern(PatternInterface.Scroll);
+        //    System.Windows.Automation.ScrollAmount scrollVertical = System.Windows.Automation.ScrollAmount.LargeIncrement;
+        //    System.Windows.Automation.ScrollAmount scrollHorizontal = System.Windows.Automation.ScrollAmount.NoAmount;
+        //    //If the vertical scroller is not available, the operation cannot be performed, which will raise an exception. 
+        //    if (scrollInterface.VerticallyScrollable)
+        //        scrollInterface.Scroll(scrollHorizontal, scrollVertical);
+        //}
 
         public delegate void ResetRoundDelegate();
 
@@ -281,11 +305,12 @@ namespace _007Game
             }
 
             EnableActionButtons();
-            MessageBox.Show(
-                "A player has left! This round has reset",
-                "Game Manager",
-                MessageBoxButton.OK,
-                MessageBoxImage.Exclamation);
+            //MessageBox.Show(
+            //    "A player has left! This round has reset",
+            //    "Game Manager",
+            //    MessageBoxButton.OK,
+            //    MessageBoxImage.Exclamation);
+            ResultsText.Content = "A player has left! This round has reset";
 
             //Reset the users health/ammo if there was a current action
             switch (currentAction)
@@ -330,32 +355,35 @@ namespace _007Game
         /// </summary>
         private void RefreshUI()
         {
-            targetComboBox.SelectedItem = null;
+            targetComboBox.SelectedIndex = 0;
             healthLabel.Content = health;
             ammoLabel.Content = ammo;
         }
 
-        private void ResetGameState()
+        private void ResetGameState(bool died = false)
         {
             //Unsubscribe from the callbacks
-            gameManager.Leave(user);
+            gameManager.Leave(user, died);
 
             //Reset the windows
             GameScreen.Visibility = Visibility.Hidden;
             HomeScreen.Visibility = Visibility.Visible;
+            PlayersViewBox.Visibility = Visibility.Hidden;
 
             buttonJoin.IsEnabled = true;
             buttonStart.IsEnabled = false;
             userName.IsEnabled = true;
 
-            players =null;
+            players = null;
             listPlayers.Items.Clear();
+            ResultsText.Content = "";
         }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //On close, we want to leave the lobby/game
             if (user != null)
-                gameManager.Leave(user);
+                gameManager.Leave(user, false);
         }
 
 

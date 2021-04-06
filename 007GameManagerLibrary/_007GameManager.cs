@@ -31,7 +31,7 @@ namespace _007GameLibrary
         string Join(string name);
 
         [OperationContract(IsOneWay = true)]
-        void Leave(string name);
+        void Leave(string name, bool died);
 
         [OperationContract]
         bool StartGame();
@@ -80,7 +80,7 @@ namespace _007GameLibrary
         /// Removes player with given name from the game
         /// </summary>
         /// <param name="name">Use alias</param>
-        public void Leave(string name)
+        public void Leave(string name, bool died)
         {
             Console.WriteLine($"User left");
             if (callbacks.ContainsKey(name))
@@ -92,10 +92,10 @@ namespace _007GameLibrary
                 //Reset the round as someone might have selected them as a target
                 playerRounds.Clear();
 
-                if (callbacks.Count > 1)
+                if (!died && callbacks.Count > 1)
                     foreach (var cb in callbacks.Values)
                         cb.ResetRound();
-                else
+                else if (callbacks.Count == 1)
                     callbacks.First().Value.SendRoundResults("You are the last player standing!", 0);
                 
             }

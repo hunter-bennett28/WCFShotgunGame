@@ -102,7 +102,6 @@
     <Resource Include="Assets\007Logo.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\Pistol.png" />
     <Resource Include="Assets\PistolMagazine.png" />
     <Resource Include="Assets\Shield.png" />
   </ItemGroup>
@@ -111,6 +110,9 @@
       <Project>{58d03985-26de-4a77-8d5d-d363b4b4125f}</Project>
       <Name>_007GameLibrary</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Pistol.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

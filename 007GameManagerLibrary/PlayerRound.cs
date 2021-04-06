@@ -43,7 +43,7 @@
                     ? $"Your shot hit {Target}! "
                     : $"{Target} blocked your shot! ";
             if (HealthLost > 0)
-                result += $"You were shot{(HealthLost > 1 ? $"{HealthLost} times!" : "!")}";
+                result += $"You were shot{(HealthLost > 1 ? $" {HealthLost} times!" : "!")}";
 
             return result;
         }
