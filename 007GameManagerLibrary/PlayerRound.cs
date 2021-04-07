@@ -10,9 +10,11 @@
         public string Result { get; set; }
         public int HealthLost { get; set; }
         public bool ShotHit { get; set; }
+        public string PlayerName { get; set; }
 
-        public PlayerRound(PlayerActions action, string target = null)
+        public PlayerRound(string name, PlayerActions action, string target = null)
         {
+            PlayerName = name;
             Action = action;
             Target = target;
             HealthLost = 0;
@@ -38,12 +40,26 @@
         public string GetResult()
         {
             string result = "";
-            if (Action == PlayerActions.Shoot)
-                result += ShotHit
-                    ? $"Your shot hit {Target}! "
-                    : $"{Target} blocked your shot! ";
-            if (HealthLost > 0)
-                result += $"You were shot{(HealthLost > 1 ? $" {HealthLost} times!" : "!")}";
+            switch (Action)
+            {
+                case PlayerActions.Shoot:
+                    result += $"{PlayerName}'s shot " + (ShotHit
+                    ? "hit"
+                    : "was blocked by") + $"{Target}";
+                    break;
+                case PlayerActions.Block:
+                    result += $"{PlayerName} blocked!";
+                    break;
+                case PlayerActions.Reload:
+                    result += $"{PlayerName} reloaded!";
+                    break;
+            }
+            //if (Action == PlayerActions.Shoot)
+            //    result += ShotHit
+            //        ? $"{PlayerName}'s shot hit {Target}! "
+            //        : $"{Target} blocked {PlayerName}'s shot! ";
+            //if (HealthLost > 1)
+            //    result += $"{PlayerName} was shot{(HealthLost > 1 ? $" {HealthLost} times!" : "!")}";
 
             return result;
         }
