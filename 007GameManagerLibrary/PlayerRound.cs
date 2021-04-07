@@ -44,22 +44,16 @@
             {
                 case PlayerActions.Shoot:
                     result += $"{PlayerName}'s shot " + (ShotHit
-                    ? "hit"
-                    : "was blocked by") + $"{Target}";
+                    ? "hit "
+                    : "was blocked by ") + $"{Target}!";
                     break;
                 case PlayerActions.Block:
-                    result += $"{PlayerName} blocked!";
+                    result += $"{PlayerName} blocked.";
                     break;
                 case PlayerActions.Reload:
-                    result += $"{PlayerName} reloaded!";
+                    result += $"{PlayerName} reloaded.";
                     break;
             }
-            //if (Action == PlayerActions.Shoot)
-            //    result += ShotHit
-            //        ? $"{PlayerName}'s shot hit {Target}! "
-            //        : $"{Target} blocked {PlayerName}'s shot! ";
-            //if (HealthLost > 1)
-            //    result += $"{PlayerName} was shot{(HealthLost > 1 ? $" {HealthLost} times!" : "!")}";
 
             return result;
         }

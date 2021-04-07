@@ -32,6 +32,7 @@ namespace _007GameService
             }
             finally
             {
+                // Key program going until user presses a key to exit
                 Console.ReadKey();
                 if (servHost != null)
                     servHost.Close();

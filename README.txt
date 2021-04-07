@@ -1,0 +1,1 @@
+This application uses wsDualHttpBinding and requires to be ran as Administrator as a result.
