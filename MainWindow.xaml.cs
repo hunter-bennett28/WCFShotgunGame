@@ -141,6 +141,17 @@ namespace _007Game
                 //Display the error message returned
                 if (result != null)
                 {
+                    if (result == "Name already in use.")
+                    {
+                        //Notify user game did not start properly
+                        Task.Run(() => MessageBox.Show(
+                          result,
+                          "007 Game Client",
+                          MessageBoxButton.OK,
+                          MessageBoxImage.Error));
+                        return;
+                    }
+
                     listPlayers.Items.Clear();
                     listPlayers.Items.Add(result); //Display the message in the player box
                 }
@@ -214,14 +225,14 @@ namespace _007Game
             this.players = players;
         }
 
-        private delegate void SendRoundResultsDelegate(string result, int damageTaken);
+        private delegate void SendRoundResultsDelegate(List<string> result, int damageTaken);
 
         /// <summary>
         /// Recieve round results from the game manager
         /// </summary>
         /// <param name="result">The string result to display</param>
         /// <param name="damageTaken">The damage taken</param>
-        public void SendRoundResults(string result, int damageTaken)
+        public void SendRoundResults(List<string> result, int damageTaken)
         {
             //Only one thread may manage the GUI
             if (System.Threading.Thread.CurrentThread != Dispatcher.Thread)
@@ -238,11 +249,12 @@ namespace _007Game
             RefreshUI();
 
             //Check if the player won (in the event of a tie, it will just show that both died)
-            if (health > 0 && result == "You are the last player standing!")
+            if (health > 0 && result[0] == "You are the last player standing!")
             {
-                Task.Run(() => {
+                Task.Run(() =>
+                {
                     MessageBox.Show(
-                        result,
+                        result[0],
                         $"{user} Round Results",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information
@@ -252,7 +264,8 @@ namespace _007Game
             }
             else
             {
-                ResultsText.Content = result != "" ? result : "You took no damage!";
+                //Temporary displaying the result
+                ResultsText.Content = result.Aggregate((r1, r2) => r1 + ' ' + r2); //Store all round results
                 EnableActionButtons();
 
                 if (health <= 0)
