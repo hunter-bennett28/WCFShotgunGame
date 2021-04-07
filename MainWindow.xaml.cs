@@ -2,33 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using _007GameLibrary;
 
 namespace _007Game
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWindow.xaml 007 game client
     /// </summary>
 
     [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant, UseSynchronizationContext = false)]
     public partial class MainWindow : Window, ICallback
     {
-        private string user = null;
-        private string[] players = null; //Stored for shoot action
+        private string user;
+        private string[] players; //Stored for shoot action
         private int health, ammo;
         private int currentAction = -1;
-        private I007Game gameManager = null;
+        private I007Game gameManager;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -38,12 +31,14 @@ namespace _007Game
             gameManager = channel.CreateChannel();
         }
 
+        // ------------- Button Handlers -------------
+
         /// <summary>
         /// Process the shoot action and send it to the game manager
         /// </summary>
         /// <param name="sender">The object sending the button press</param>
         /// <param name="e">The event args</param>
-        private void onShootClick(object sender, RoutedEventArgs e)
+        private void OnShootClick(object sender, RoutedEventArgs e)
         {
             //TODO: Register action as a shoot
             //          - Pick who is being shot from the players array
@@ -82,7 +77,7 @@ namespace _007Game
         /// </summary>
         /// <param name="sender">The object sending the button press</param>
         /// <param name="e">The event args</param>
-        private void onReloadClick(object sender, RoutedEventArgs e)
+        private void OnReloadClick(object sender, RoutedEventArgs e)
         {
             gameManager.TakeAction(user, PlayerActions.Reload);
             ++ammo;
@@ -97,7 +92,7 @@ namespace _007Game
         /// </summary>
         /// <param name="sender">The object sending the button press</param>
         /// <param name="e">The event args</param>
-        private void onBlockClick(object sender, RoutedEventArgs e)
+        private void OnBlockClick(object sender, RoutedEventArgs e)
         {
             gameManager.TakeAction(user, PlayerActions.Block);
             currentAction = (int)PlayerActions.Block;
@@ -111,7 +106,7 @@ namespace _007Game
         /// </summary>
         /// <param name="sender">The object sending the button press</param>
         /// <param name="e">The event args</param>
-        private void onStartClick(object sender, RoutedEventArgs e)
+        private void OnStartClick(object sender, RoutedEventArgs e)
         {
             if (!gameManager.StartGame())
             {
@@ -131,7 +126,7 @@ namespace _007Game
         /// </summary>
         /// <param name="sender">The object sending the button press</param>
         /// <param name="e">The event args</param>
-        private void onJoinClick(object sender, RoutedEventArgs e)
+        private void OnJoinClick(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -141,7 +136,7 @@ namespace _007Game
                 //Display the error message returned
                 if (result != null)
                 {
-                    if (result == "Name already in use.")
+                    if (result == "Name already in use." || result == "Game currently in progress.")
                     {
                         //Notify user game did not start properly
                         Task.Run(() => MessageBox.Show(
@@ -174,8 +169,19 @@ namespace _007Game
             }
         }
 
+        /// <summary>
+        /// Handler for OK button in game ending dialog. Closes dialog and resets content
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnGameEndOKClick(object sender, RoutedEventArgs e)
+        {
+            GameEndText.Content = "";
+            GameEndScreen.Visibility = Visibility.Hidden;
+        }
+
         // ------------- Callback Methods -------------
-        private delegate void StartGameDelegate();
+
         /// <summary>
         /// The callback that starts the game for all players
         /// </summary>
@@ -185,13 +191,13 @@ namespace _007Game
             if (System.Threading.Thread.CurrentThread != Dispatcher.Thread)
             {
                 //Hand the task to the dispatcher
-                Dispatcher.BeginInvoke(new StartGameDelegate(StartGame));
+                Dispatcher.BeginInvoke(new Action(StartGame));
                 return;
             }
 
             //Set up the game screen
             health = 3;
-            ammo = 3;
+            ammo = 1;
 
             userNameLabel.Content = user;
             RefreshUI();
@@ -201,31 +207,50 @@ namespace _007Game
             GameScreen.Visibility = Visibility.Visible;
         }
 
-        private delegate void SendAllPlayersDelegate(string[] players);
         /// <summary>
         /// Recieve all players from the game manager
         /// </summary>
         /// <param name="players">The players currently in the game</param>
-        public void SendAllPlayers(string[] players)
+        public void SendAllPlayers(string[] allPlayers)
         {
             //Only one thread may manage the GUI
             if (System.Threading.Thread.CurrentThread != Dispatcher.Thread)
             {
                 //Hand the task to the dispatcher
-                Dispatcher.BeginInvoke(new SendAllPlayersDelegate(SendAllPlayers), new object[] { players }); //Cannot pass raw players as it excepts an object[]
+                Dispatcher.BeginInvoke(new Action<string[]>(SendAllPlayers), new object[] { allPlayers }); //Cannot pass raw players as it excepts an object[]
                 return;
             }
 
             //Update the potential targets
-            targetComboBox.ItemsSource = players.Where(player => player != user);
+            targetComboBox.ItemsSource = allPlayers.Where(player => player != user);
+            targetComboBox.SelectedIndex = 0;
+
+            //Find any players who died
+            if (players != null)
+                foreach (string player in players)
+                    if (!allPlayers.Contains(player))
+                        ResultsText.Content = $"{ResultsText.Content}\n{player} died!";
 
             listPlayers.Items.Clear();
             //Add each player to the list
-            Array.ForEach(players, (player) => listPlayers.Items.Add(player));
-            this.players = players;
+            Array.ForEach(allPlayers, (player) => listPlayers.Items.Add(player));
+            players = allPlayers;
         }
 
-        private delegate void SendRoundResultsDelegate(List<string> result, int damageTaken);
+        /// <summary>
+        /// Helper function that moves a result string to the start of the list
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="index"></param>
+        public void SwapResultIndexWithStart(List<string> list, int index)
+        {
+            if (index < 1)
+                return;
+
+            string temp = list[0];
+            list[0] = list[index];
+            list[index] = temp;
+        }
 
         /// <summary>
         /// Recieve round results from the game manager
@@ -238,7 +263,7 @@ namespace _007Game
             if (System.Threading.Thread.CurrentThread != Dispatcher.Thread)
             {
                 //Hand the task to the dispatcher
-                Dispatcher.BeginInvoke(new SendRoundResultsDelegate(SendRoundResults), new object[] { result, damageTaken }); //Cannot pass raw players as it excepts an object[]
+                Dispatcher.BeginInvoke(new Action<List<string> , int>(SendRoundResults), new object[] { result, damageTaken }); //Cannot pass raw players as it excepts an object[]
                 return;
             }
 
@@ -251,39 +276,49 @@ namespace _007Game
             //Check if the player won (in the event of a tie, it will just show that both died)
             if (health > 0 && result[0] == "You are the last player standing!")
             {
-                Task.Run(() =>
-                {
-                    MessageBox.Show(
-                        result[0],
-                        $"{user} Round Results",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                        );
-                });
+                GameEndText.Content = result[0];
+                GameEndScreen.Visibility = Visibility.Visible;
                 ResetGameState();
             }
             else
             {
+                // Replace player's name in results with "Your" and "You/you" appropriately
+                Regex playerPosessive = new Regex($"^{user}'s");
+                Regex playerNameStart = new Regex($"^{user}\\s");
+                for(int i = 0; i < result.Count; ++i)
+                {
+                    // If result doesn't fit on one line, space it out
+                    if (result[i].Length > 30)
+                    {
+                        int lastSpace = result[i].Substring(0, 30).LastIndexOf(' ');
+                        result[i] = $"{result[i].Substring(0, lastSpace)}\n{result[i].Substring(lastSpace + 1)}";
+                    }
+                    
+                    // Do name swapping
+                    if (playerPosessive.IsMatch(result[i]))
+                    {
+                        result[i] = playerPosessive.Replace(result[i], "Your");
+                        SwapResultIndexWithStart(result, i);
+                    }
+                    else if (playerNameStart.IsMatch(result[i]))
+                    {
+                        result[i] = playerNameStart.Replace(result[i], "You ");
+                        SwapResultIndexWithStart(result, i);
+                    }
+                }
+
                 //Temporary displaying the result
-                ResultsText.Content = result.Aggregate((r1, r2) => r1 + ' ' + r2); //Store all round results
+                ResultsText.Content = result.Aggregate((r1, r2) => r1 + '\n' + r2); //Store all round results
                 EnableActionButtons();
 
                 if (health <= 0)
                 {
-                    Task.Run(() =>
-                    {
-                        MessageBox.Show(
-                          "You have died!",
-                           $"{user} Round Results",
-                          MessageBoxButton.OK,
-                          MessageBoxImage.Information);
-                    });
+                    GameEndText.Content = "You have died!";
+                    GameEndScreen.Visibility = Visibility.Visible;
                     ResetGameState(true);
                 }
             }
         }
-
-        public delegate void ResetRoundDelegate();
 
         /// <summary>
         /// Reset the round if a player left mid-round
@@ -294,12 +329,12 @@ namespace _007Game
             if (System.Threading.Thread.CurrentThread != Dispatcher.Thread)
             {
                 //Hand the task to the dispatcher
-                Dispatcher.BeginInvoke(new ResetRoundDelegate(ResetRound));
+                Dispatcher.BeginInvoke(new Action(ResetRound));
                 return;
             }
 
             EnableActionButtons();
-            ResultsText.Content = "A player has left! This round has reset";
+            ResultsText.Content = "A player has left!\nThis round has reset";
 
             //Reset the users health/ammo if there was a current action
             switch (currentAction)
@@ -349,6 +384,10 @@ namespace _007Game
             ammoLabel.Content = ammo;
         }
 
+        /// <summary>
+        /// Resets the client's game state back to the initial state
+        /// </summary>
+        /// <param name="died"></param>
         private void ResetGameState(bool died = false)
         {
             //Unsubscribe from the callbacks
@@ -368,6 +407,11 @@ namespace _007Game
             ResultsText.Content = "";
         }
 
+        /// <summary>
+        /// Window closing handler that leaves the game before exiting
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //On close, we want to leave the lobby/game

@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ServiceModel;
 
 namespace _007GameLibrary
 {
+    // All Action options for players in a round
     public enum PlayerActions { Shoot, Reload, Block };
 
+    /// <summary>
+    /// Callback contract for game client
+    /// </summary>
     public interface ICallback
     {
         [OperationContract(IsOneWay = true)]
@@ -24,6 +26,9 @@ namespace _007GameLibrary
         void ResetRound();
     }
 
+    /// <summary>
+    /// Service contract interface for communicating with client
+    /// </summary>
     [ServiceContract(CallbackContract = typeof(ICallback))]
     public interface I007Game
     {
@@ -38,9 +43,12 @@ namespace _007GameLibrary
 
         [OperationContract(IsOneWay = true)]
         void TakeAction(string name, PlayerActions action, string target = null);
-
     }
 
+    /// <summary>
+    /// Game manager class library for 007 Game. Handles receiving, sending, and processing player data,
+    /// as well as players joining and leaving.
+    /// </summary>
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class _007GameManager : I007Game
     {
@@ -62,14 +70,13 @@ namespace _007GameLibrary
                 return "Name already in use.";
             else
             {
-                Console.WriteLine($"{name} joining");
+                Console.WriteLine($"{name} joined.");
 
                 // Retrieve client's callback proxy and add user
                 ICallback cb = OperationContext.Current.GetCallbackChannel<ICallback>();
                 callbacks.Add(name, cb);
 
                 //Notify all clients of update
-                Console.WriteLine("Notifying players");
                 NotifyPlayers();
 
                 return null;
@@ -82,10 +89,9 @@ namespace _007GameLibrary
         /// <param name="name">Use alias</param>
         public void Leave(string name, bool died)
         {
-            Console.WriteLine($"User left");
+            Console.WriteLine($"{name} {(died ? "died" : "left")}!");
             if (callbacks.ContainsKey(name))
             {
-                Console.WriteLine($"{name} is leaving the callbacks");
                 callbacks.Remove(name);
                 NotifyPlayers();
 
@@ -97,8 +103,10 @@ namespace _007GameLibrary
                         cb.ResetRound();
                 else if (callbacks.Count == 1)
                     callbacks.First().Value.SendRoundResults(new List<string>() { "You are the last player standing!" }, 0);
-
-            }
+                else if (callbacks.Count == 0)
+                    gameInProgress = false;
+                Console.WriteLine($"Players remaining: {callbacks.Count}");
+            }  
         }
 
         /// <summary>
@@ -112,11 +120,12 @@ namespace _007GameLibrary
 
             foreach (ICallback cb in callbacks.Values)
                 cb.StartGame();
+            gameInProgress = true;
             return true;
         }
 
         /// <summary>
-        /// 
+        /// Handles a player submitting their action for a round
         /// </summary>
         /// <param name="name">The player's name</param>
         /// <param name="action">The action they have chosen</param>
@@ -136,15 +145,10 @@ namespace _007GameLibrary
             if (playerRounds.Count != callbacks.Count)
                 return;
 
-            Console.WriteLine("\nProcessing round");
-
             // Process all shots taken by players
             foreach (var playerRound in playerRounds.Values)
                 if (playerRound.Action == PlayerActions.Shoot)
                     playerRound.ShotHit = playerRounds[playerRound.Target].ReceiveShot();
-
-            //Get each Players results and concat it into a string[]
-
 
             // Report results to all players
             List<string> results = new List<string>();
@@ -168,7 +172,6 @@ namespace _007GameLibrary
             }
 
             playerRounds.Clear();
-            Console.WriteLine($"Players remaining: {callbacks.Count}");
 
             //Notify the last user
             if (callbacks.Count == 1)
@@ -184,16 +187,9 @@ namespace _007GameLibrary
         {
             //Get the string array
             string[] players = callbacks.Keys.ToArray();
-            foreach (string player in players)
-                Console.WriteLine(player);
 
-            Console.WriteLine($"Notifying updated players:");
-            //Array.ForEach(players, Console.Write);
-            Console.WriteLine($"\nCallbacks to make: {callbacks.Count}\nPlayers in lobby: {players.Length}");
             foreach (ICallback callback in callbacks.Values)
-            {
                 callback.SendAllPlayers(players);
-            }
         }
     }
 }

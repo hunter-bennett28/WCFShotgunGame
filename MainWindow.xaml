@@ -23,7 +23,7 @@
                     <Grid>
                         <Label Margin="0,140,0,0" FontSize="22" Foreground="Red" FontStyle="Italic" HorizontalAlignment="Center">Enter A Name To Join</Label>
                         <TextBox Margin="44,204,45,168" Name="userName" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Width="232" FontSize="17" BorderBrush="Black"/>
-                        <Button Content="Join" Height="36" HorizontalAlignment="Center" Background="Red" Foreground="White" IsEnabled="True" Margin="116,260,115,111" Name="buttonJoin" VerticalAlignment="Center" Width="90" Click="onJoinClick" />
+                        <Button Content="Join" Height="36" HorizontalAlignment="Center" Background="Red" Foreground="White" IsEnabled="True" Margin="116,260,115,111" Name="buttonJoin" VerticalAlignment="Center" Width="90" Click="OnJoinClick" />
                     </Grid>
                 </GroupBox>
                 <!--Players Form-->
@@ -31,7 +31,7 @@
                     <Grid Background="White" Margin="0,5,0,0">
                         <Label Foreground="Red" FontSize="22" Margin="0,0,0,289.4" HorizontalAlignment="Center" FontStyle="Italic" >Players</Label>
                         <ListBox HorizontalAlignment="Center" Margin="10,39,10,51" x:Name="listPlayers" Width="236" IsEnabled="False" FontSize="18"/>
-                        <Button Content="Start Game" Height="28" Background="Red" IsEnabled="False" Foreground="White" HorizontalAlignment="Center" Margin="0,320,0,0" Name="buttonStart" Width="90" Click="onStartClick" />
+                        <Button Content="Start Game" Height="28" Background="Red" IsEnabled="False" Foreground="White" HorizontalAlignment="Center" Margin="0,320,0,0" Name="buttonStart" Width="90" Click="OnStartClick" />
                     </Grid>
                 </GroupBox>
             </Grid>
@@ -41,45 +41,45 @@
         <GroupBox Name="GameScreen" Visibility="Hidden" Background="White" Margin="60,47,60,27">
             <Grid>
                 <!--Name and stats box-->
-                <GroupBox BorderThickness="0" Margin="0,0,0,248">
+                <GroupBox BorderThickness="0" Margin="-112,10,112,215">
                     <Grid>
                         <Label Margin="0,0,0,0" FontSize="24" FontStyle="Italic" Name="userNameLabel" Content="SomeName" HorizontalAlignment="Center"/>
-                        <Label Margin="187,40,0,0" FontSize="20" FontStyle="Italic" Foreground="Red" Content="Health:" HorizontalAlignment="Left" />
-                        <Label Margin="265,40,0,0" FontSize="20" FontStyle="Italic" Name="healthLabel" Content="2" HorizontalAlignment="Left"/>
-                        <Label Margin="0,40,210,0" FontSize="20" FontStyle="Italic" Foreground="Red" Content="Ammo:" HorizontalAlignment="Right"/>
-                        <Label Margin="0,40,187,0" FontSize="20" FontStyle="Italic" Name="ammoLabel" Content="2" HorizontalAlignment="Right" />
+                        <Label Margin="187,45,0,0" FontSize="20" FontStyle="Italic" Foreground="Red" Content="Health:" HorizontalAlignment="Left" />
+                        <Label Margin="265,45,0,0" FontSize="20" FontStyle="Italic" Name="healthLabel" HorizontalAlignment="Left"/>
+                        <Label Margin="0,45,210,0" FontSize="20" FontStyle="Italic" Foreground="Red" Content="Ammo:" HorizontalAlignment="Right"/>
+                        <Label Margin="0,45,187,0" FontSize="20" FontStyle="Italic" Name="ammoLabel" HorizontalAlignment="Right" />
                     </Grid>
                 </GroupBox>
                 <!--Buttons box-->
-                <GroupBox Name="ButtonBox" Margin="96,87,94,125" BorderThickness="0">
+                <GroupBox Name="ButtonBox" Margin="-16,113,206,99" BorderThickness="0">
                     <Grid Margin="0,0,0,0">
-                        <Button Margin="-250,0,0,0" Background="White" Height="110" Width="110" Click="onShootClick" Name="buttonShoot">
+                        <Button Margin="-250,0,0,0" Background="White" Height="110" Width="110" Click="OnShootClick" Name="buttonShoot">
                             <StackPanel>
                                 <Image Source="./Assets/Pistol.png" Height="62" Width="86"/>
                                 <Label HorizontalAlignment="Center" FontSize="16" >Shoot</Label>
                             </StackPanel>
                         </Button>
-                        <Button Margin="0,0,0,0" Background="White" Height="110" Width="110" HorizontalAlignment="Center" Click="onReloadClick" Name="buttonReload">
+                        <Button Margin="0,0,0,0" Background="White" Height="110" Width="110" HorizontalAlignment="Center" Click="OnReloadClick" Name="buttonReload">
                             <StackPanel>
                                 <Image Source="./Assets/PistolMagazine.png" Height="63" Width="95"/>
                                 <Label HorizontalAlignment="Center" FontSize="16" >Reload</Label>
                             </StackPanel>
                         </Button>
-                        <Button Margin="250,0,0,0" Background="White" Height="110" Width="110" Click="onBlockClick" Name="buttonBlock">
+                        <Button Margin="250,0,0,0" Background="White" Height="110" Width="110" Click="OnBlockClick" Name="buttonBlock">
                             <StackPanel>
                                 <Image Source="./Assets/Shield.png" Height="62" Width="86" />
                                 <Label HorizontalAlignment="Center" FontSize="16" Content="Block"/>
                             </StackPanel>
                         </Button>
                         <!--Target Box-->
-                        <GroupBox Margin="0,120,0,-70" BorderThickness="0" HorizontalAlignment="Center">
+                        <GroupBox Margin="64,140,127,-90" BorderThickness="0" HorizontalAlignment="Center">
                             <Grid Margin="0,0,0,0">
-                                <Label FontSize="16" Content="Target:" Height="46" Margin="0,3,200,3"/>
+                                <Label FontSize="16" Content="Target:" Height="46" Margin="0,6,190,3"/>
                                 <ComboBox Name="targetComboBox" Margin="65,10,5,15" FontSize="14"/>
                             </Grid>
                         </GroupBox>
                         <!--Status messages box-->
-                        <GroupBox Header="Round Results" Margin="0,166,0,-108">
+                        <GroupBox Header="Round Results" Margin="441,-71,-180,-61">
                             <Label Name="ResultsText" BorderThickness="1" Foreground="Red"/>
                         </GroupBox>
                     </Grid>
@@ -90,5 +90,13 @@
             </Grid>
         </GroupBox>
         <!--Game Screen End-->
+        <!--Game Results Screen-->
+        <GroupBox Background="Red" Margin="100,110,100,110" Visibility="Hidden" Name="GameEndScreen">
+            <Grid>
+                <Label Name="GameEndText" Foreground="White" FontSize="32" HorizontalAlignment="Center" Margin="10,34,10,70"/>
+                <Button Name="GameEndOKButton" Content="OK" Background="White" FontSize="20" Margin="237,120,245,34" Click="OnGameEndOKClick"/>
+            </Grid>
+        </GroupBox>
+        <!--Game Results Screen End-->
     </Grid>
 </Window>
