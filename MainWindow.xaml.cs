@@ -284,7 +284,7 @@ namespace _007Game
             {
                 // Replace player's name in results with "Your" and "You/you" appropriately
                 Regex playerPosessive = new Regex($"^{user}'s");
-                Regex playerNameStart = new Regex($"^{user}\\s");
+                Regex playerNameStart = new Regex($"{user}");
                 for(int i = 0; i < result.Count; ++i)
                 {
                     // If result doesn't fit on one line, space it out
@@ -300,9 +300,9 @@ namespace _007Game
                         result[i] = playerPosessive.Replace(result[i], "Your");
                         SwapResultIndexWithStart(result, i);
                     }
-                    else if (playerNameStart.IsMatch(result[i]))
+                    else if (playerNameStart.IsMatch(result[i])) //Replace their name on passive actions (reloading or being shot)
                     {
-                        result[i] = playerNameStart.Replace(result[i], "You ");
+                        result[i] = playerNameStart.Replace(result[i], i!=0?"You":"you");
                         SwapResultIndexWithStart(result, i);
                     }
                 }
