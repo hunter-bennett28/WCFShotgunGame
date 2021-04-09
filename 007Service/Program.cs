@@ -1,7 +1,7 @@
 ﻿/*
  *  Program:        007Service.exe 
  *  Module:         Program.cs
- *  Author:         H. Bennett, C. Black
+ *  Author:         Hunter Bennett, Connor Black
  *  Date:           March 30, 2021
  *  Description:    A host application for the 007GameManager WCF service
  */

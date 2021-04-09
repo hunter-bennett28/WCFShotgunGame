@@ -106,7 +106,7 @@
     <Resource Include="Assets\Shield.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="007GameManagerLibrary\_007GameLibrary.csproj">
+    <ProjectReference Include="..\007GameManagerLibrary\_007GameLibrary.csproj">
       <Project>{58d03985-26de-4a77-8d5d-d363b4b4125f}</Project>
       <Name>_007GameLibrary</Name>
     </ProjectReference>

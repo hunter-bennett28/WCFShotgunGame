@@ -1,13 +1,24 @@
-﻿namespace _007GameLibrary
+﻿/*
+ * Library:         007GameLibrary.dll
+ * Module:          PlayerRound.cs
+ * Author:          Hunter Bennett, Connor Black
+ * Date:            March 25, 2021
+ * Description:     Class contains round information for each player
+ */
+
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
+namespace _007GameLibrary
 {
-    /// <summary>
-    /// Class containing data for actions taken by 007Game players in a round
-    /// </summary>
+    [DataContract]
     public class PlayerRound
     {
         public PlayerActions Action { get; set; }
         public string Target { get; set; }
-        public string Result { get; set; }
+        [DataMember]
+        public List<string> Results { get; set; }
+        [DataMember]
         public int HealthLost { get; set; }
         public bool ShotHit { get; set; }
         public string PlayerName { get; set; }
@@ -19,6 +30,7 @@
             Target = target;
             HealthLost = 0;
             ShotHit = false;
+            Results = new List<string>();
         }
 
         /// <summary>
@@ -37,21 +49,21 @@
         /// Returns a results string based on their action and damage taken
         /// </summary>
         /// <returns></returns>
-        public string GetResult()
+        public string GetResult(bool isSelf = false)
         {
             string result = "";
             switch (Action)
             {
                 case PlayerActions.Shoot:
-                    result += $"{PlayerName}'s shot " + (ShotHit
+                    result += $"{(isSelf ? "Your" : $"{PlayerName}'s" )} shot " + (ShotHit
                     ? "hit "
                     : "was blocked by ") + $"{Target}!";
                     break;
                 case PlayerActions.Block:
-                    result += $"{PlayerName} blocked.";
+                    result += $"{(isSelf ? "You" : PlayerName)} blocked.";
                     break;
                 case PlayerActions.Reload:
-                    result += $"{PlayerName} reloaded.";
+                    result += $"{(isSelf ? "You" : PlayerName)} reloaded.";
                     break;
             }
 

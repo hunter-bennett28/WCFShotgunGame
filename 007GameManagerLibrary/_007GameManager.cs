@@ -1,7 +1,18 @@
-﻿using System;
+﻿/*
+ * Library:         007GameLibrary.dll
+ * Module:          _007GameManager.cs
+ * Author:          Hunter Bennett, Connor Black
+ * Date:            March 25, 2021
+ * Description:     Game manager library for multiplater 007 game. Contains the
+ *                  game manager itself as well as the Serive and Callback contract
+ *                  interfaces it uses.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text.RegularExpressions;
 
 namespace _007GameLibrary
 {
@@ -20,7 +31,8 @@ namespace _007GameLibrary
         void SendAllPlayers(string[] players);
 
         [OperationContract(IsOneWay = true)]
-        void SendRoundResults(List<string> result, int damageTaken);
+        void SendRoundResults(PlayerRound round);
+        //void SendRoundResults(List<string> result, int damageTaken);
 
         [OperationContract(IsOneWay = true)]
         void ResetRound();
@@ -102,7 +114,14 @@ namespace _007GameLibrary
                     foreach (var cb in callbacks.Values)
                         cb.ResetRound();
                 else if (callbacks.Count == 1)
-                    callbacks.First().Value.SendRoundResults(new List<string>() { "You are the last player standing!" }, 0);
+                {
+                    PlayerRound round = new PlayerRound("", PlayerActions.Shoot)
+                    {
+                        Results = new List<string>() { "You are the last player standing!" },
+                        HealthLost = 0
+                    };
+                    callbacks.First().Value.SendRoundResults(round);
+                } 
                 else if (callbacks.Count == 0)
                     gameInProgress = false;
                 Console.WriteLine($"Players remaining: {callbacks.Count}");
@@ -151,31 +170,44 @@ namespace _007GameLibrary
                     playerRound.ShotHit = playerRounds[playerRound.Target].ReceiveShot();
 
             // Report results to all players
-            List<string> results = new List<string>();
+            // List<string> results = new List<string>();
             foreach (var cb in callbacks)
             {
+                Regex playerName = new Regex(cb.Key);
                 PlayerRound round = playerRounds[cb.Key];
-                results.Add(round.GetResult());
+                round.Results.Add(round.GetResult(true));
+                foreach(var callback in callbacks)
+                {
+                    if (callback.Key == round.PlayerName)
+                        continue;
+                    string playerResult = playerRounds[callback.Key].GetResult();
+                    if (playerName.IsMatch(playerResult))
+                        playerResult = playerName.Replace(playerResult, "you");
+                    round.Results.Add(playerResult);
+                }
+                
             }
 
             // Report results to all players
             foreach (var cb in callbacks)
-            {
-                PlayerRound round = playerRounds[cb.Key];
-                cb.Value.SendRoundResults(results, round.HealthLost);
-            }
+                cb.Value.SendRoundResults(playerRounds[cb.Key]);
 
             //Update the players on each client as some might have left/died during the turn
             foreach (var cb in callbacks)
-            {
                 cb.Value.SendAllPlayers(callbacks.Keys.ToArray());
-            }
 
             playerRounds.Clear();
 
             //Notify the last user
             if (callbacks.Count == 1)
-                callbacks.Values.First().SendRoundResults(new List<string>() { "You are the last player standing!" }, 0);
+            {
+                var cb = callbacks.First();
+                PlayerRound round = playerRounds[cb.Key];
+                round.Results.Clear();
+                round.Results.Add("You are the last player standing!");
+                callbacks.Values.First().SendRoundResults(round);
+            }
+                
         }
 
         // ------------- Helper Methods -------------
