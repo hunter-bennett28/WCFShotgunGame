@@ -79,7 +79,7 @@
                             </Grid>
                         </GroupBox>
                         <!--Status messages box-->
-                        <GroupBox Header="Round Results" Margin="441,-71,-180,-61">
+                        <GroupBox Header="Round Results" Margin="441,-71,-182,-61">
                             <Label Name="ResultsText" BorderThickness="1" Foreground="Red"/>
                         </GroupBox>
                     </Grid>
