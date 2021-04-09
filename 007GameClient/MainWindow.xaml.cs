@@ -126,6 +126,9 @@ namespace _007Game
                   MessageBoxButton.OK,
                   MessageBoxImage.Warning);
             }
+            else //Clear the round results box as there could be pre-game data in it
+                ResultsText.Content = "";
+
         }
 
         /// <summary>
@@ -137,9 +140,20 @@ namespace _007Game
         {
             try
             {
-                user = userName.Text;
-                string result = gameManager.Join(user);
+                user = userName.Text.Trim();
 
+                //No username was passed
+                if (user=="")
+                {
+                    Task.Run(() => MessageBox.Show(
+                          "Please enter a name",
+                          "007 Game Client",
+                          MessageBoxButton.OK,
+                          MessageBoxImage.Error));
+                    return;
+                }
+
+                string result = gameManager.Join(user);
                 //Display the error message returned
                 if (result != null)
                 {

@@ -105,27 +105,32 @@ namespace _007GameLibrary
             if (callbacks.ContainsKey(name))
             {
                 callbacks.Remove(name);
+
                 NotifyPlayers();
 
-                //Reset the round as someone might have selected them as a target
-                playerRounds.Clear();
-
-                if (!died && callbacks.Count > 1)
-                    foreach (var cb in callbacks.Values)
-                        cb.ResetRound();
-                else if (callbacks.Count == 1)
+                //Only reset the round if the round isn't in progress
+                if (gameInProgress)
                 {
-                    PlayerRound round = new PlayerRound("", PlayerActions.Shoot)
+                    //Reset the round as someone might have selected them as a target
+                    playerRounds.Clear();
+
+                    if (!died && callbacks.Count > 1)
+                        foreach (var cb in callbacks.Values)
+                            cb.ResetRound();
+                    else if (callbacks.Count == 1)
                     {
-                        Results = new List<string>() { "You are the last player standing!" },
-                        HealthLost = 0
-                    };
-                    callbacks.First().Value.SendRoundResults(round);
-                } 
-                else if (callbacks.Count == 0)
-                    gameInProgress = false;
-                Console.WriteLine($"Players remaining: {callbacks.Count}");
-            }  
+                        PlayerRound round = new PlayerRound("", PlayerActions.Shoot)
+                        {
+                            Results = new List<string>() { "You are the last player standing!" },
+                            HealthLost = 0
+                        };
+                        callbacks.First().Value.SendRoundResults(round);
+                    }
+                    else if (callbacks.Count == 0)
+                        gameInProgress = false;
+                    Console.WriteLine($"Players remaining: {callbacks.Count}");
+                }
+            }
         }
 
         /// <summary>
@@ -176,7 +181,7 @@ namespace _007GameLibrary
                 Regex playerName = new Regex(cb.Key);
                 PlayerRound round = playerRounds[cb.Key];
                 round.Results.Add(round.GetResult(true));
-                foreach(var callback in callbacks)
+                foreach (var callback in callbacks)
                 {
                     if (callback.Key == round.PlayerName)
                         continue;
@@ -185,7 +190,6 @@ namespace _007GameLibrary
                         playerResult = playerName.Replace(playerResult, "you");
                     round.Results.Add(playerResult);
                 }
-                
             }
 
             // Report results to all players
@@ -207,7 +211,7 @@ namespace _007GameLibrary
                 round.Results.Add("You are the last player standing!");
                 callbacks.Values.First().SendRoundResults(round);
             }
-                
+
         }
 
         // ------------- Helper Methods -------------
