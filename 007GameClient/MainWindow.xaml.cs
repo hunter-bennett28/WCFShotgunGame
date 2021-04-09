@@ -153,6 +153,16 @@ namespace _007Game
                     return;
                 }
 
+                if (user.Length > 15)
+                {
+                    Task.Run(() => MessageBox.Show(
+                        "Name too long (15 characters max)",
+                        "007 Game Client",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error));
+                    return;
+                }
+
                 string result = gameManager.Join(user);
                 //Display the error message returned
                 if (result != null)
@@ -305,9 +315,9 @@ namespace _007Game
                 // Ensure results don't go out of bounds
                 for (int i = 0; i < round.Results.Count; ++i)
                 {
-                    if (round.Results[i].Length > 30)
+                    if (round.Results[i].Length > 29)
                     {
-                        int lastSpace = round.Results[i].Substring(0, 30).LastIndexOf(' ');
+                        int lastSpace = round.Results[i].Substring(0, 29).LastIndexOf(' ');
                         round.Results[i] = $"{round.Results[i].Substring(0, lastSpace)}\n{round.Results[i].Substring(lastSpace + 1)}";
                     }
                 }

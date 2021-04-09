@@ -34,6 +34,19 @@ namespace _007GameLibrary
         }
 
         /// <summary>
+        /// Secondary constructor that just initializes a single message to send to client
+        /// </summary>
+        /// <param name="message"></param>
+        public PlayerRound(string message)
+        {
+            PlayerName = "";
+            Target = "";
+            HealthLost = 0;
+            ShotHit = false;
+            Results = new List<string>() { message };
+        }
+
+        /// <summary>
         /// Handles player being shot, incrementing health lost if they did not block it
         /// </summary>
         /// <returns></returns>
