@@ -17,7 +17,7 @@ namespace _007Game
     public partial class MainWindow : Window, ICallback
     {
         private string user;
-        private string[] players; //Stored for shoot action
+        private string[] players;
         private int health, ammo;
         private int currentAction = -1;
         private I007Game gameManager;
@@ -40,9 +40,6 @@ namespace _007Game
         /// <param name="e">The event args</param>
         private void OnShootClick(object sender, RoutedEventArgs e)
         {
-            //TODO: Register action as a shoot
-            //          - Pick who is being shot from the players array
-
             if (ammo > 0)
             {
                 //Check if there is a target
@@ -284,7 +281,9 @@ namespace _007Game
             {
                 // Replace player's name in results with "Your" and "You/you" appropriately
                 Regex playerPosessive = new Regex($"^{user}'s");
-                Regex playerNameStart = new Regex($"{user}");
+                Regex playerNameStart = new Regex($"^{user}");
+                Regex playerName = new Regex(user);
+
                 for(int i = 0; i < result.Count; ++i)
                 {
                     // If result doesn't fit on one line, space it out
@@ -302,8 +301,12 @@ namespace _007Game
                     }
                     else if (playerNameStart.IsMatch(result[i])) //Replace their name on passive actions (reloading or being shot)
                     {
-                        result[i] = playerNameStart.Replace(result[i], i!=0?"You":"you");
+                        result[i] = playerNameStart.Replace(result[i], "You");
                         SwapResultIndexWithStart(result, i);
+                    }
+                    else if (playerName.IsMatch(result[i]))
+                    {
+                        result[i] = playerName.Replace(result[i], "you");
                     }
                 }
 
