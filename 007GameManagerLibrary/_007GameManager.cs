@@ -119,11 +119,7 @@ namespace _007GameLibrary
                             cb.ResetRound();
                     else if (callbacks.Count == 1)
                     {
-                        PlayerRound round = new PlayerRound("", PlayerActions.Shoot)
-                        {
-                            Results = new List<string>() { "You are the last player standing!" },
-                            HealthLost = 0
-                        };
+                        PlayerRound round = new PlayerRound("You are the last player standing!");
                         callbacks.First().Value.SendRoundResults(round);
                     }
                     else if (callbacks.Count == 0)
