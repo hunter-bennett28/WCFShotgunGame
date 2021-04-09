@@ -1,8 +1,18 @@
-﻿using System;
+﻿/*
+ * Program:         007Game.exe
+ * Module:          MainWindow.xaml.cs
+ * Author:          Hunter Bennett, Connor Black
+ * Date:            March 25, 2021
+ * Description:     A Windows WPF client that uses 007GameLibrary.dll via a WCF service.
+ * 
+ *                  Note that this requires running with administration priviledges
+ *                  due to HTML connection type
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using _007GameLibrary;
@@ -17,7 +27,7 @@ namespace _007Game
     public partial class MainWindow : Window, ICallback
     {
         private string user;
-        private string[] players; //Stored for shoot action
+        private string[] players;
         private int health, ammo;
         private int currentAction = -1;
         private I007Game gameManager;
@@ -40,9 +50,6 @@ namespace _007Game
         /// <param name="e">The event args</param>
         private void OnShootClick(object sender, RoutedEventArgs e)
         {
-            //TODO: Register action as a shoot
-            //          - Pick who is being shot from the players array
-
             if (ammo > 0)
             {
                 //Check if there is a target
@@ -255,60 +262,44 @@ namespace _007Game
         /// <summary>
         /// Recieve round results from the game manager
         /// </summary>
-        /// <param name="result">The string result to display</param>
-        /// <param name="damageTaken">The damage taken</param>
-        public void SendRoundResults(List<string> result, int damageTaken)
+        /// <param name="round">The object from server containing the players round result information</param>
+        public void SendRoundResults(PlayerRound round)
         {
             //Only one thread may manage the GUI
             if (System.Threading.Thread.CurrentThread != Dispatcher.Thread)
             {
                 //Hand the task to the dispatcher
-                Dispatcher.BeginInvoke(new Action<List<string> , int>(SendRoundResults), new object[] { result, damageTaken }); //Cannot pass raw players as it excepts an object[]
+                Dispatcher.BeginInvoke(new Action<PlayerRound>(SendRoundResults), new object[] { round }); //Cannot pass raw players as it excepts an object[]
                 return;
             }
 
             //Update health and the current action
             currentAction = -1;
-            health = health - damageTaken < 0 ? 0 : health - damageTaken;
+            health = health - round.HealthLost < 0 ? 0 : health - round.HealthLost;
             WaitingBox.Visibility = Visibility.Hidden;
             RefreshUI();
 
             //Check if the player won (in the event of a tie, it will just show that both died)
-            if (health > 0 && result[0] == "You are the last player standing!")
+            if (health > 0 && round.Results[0] == "You are the last player standing!")
             {
-                GameEndText.Content = result[0];
+                GameEndText.Content = round.Results[0];
                 GameEndScreen.Visibility = Visibility.Visible;
                 ResetGameState();
             }
             else
             {
-                // Replace player's name in results with "Your" and "You/you" appropriately
-                Regex playerPosessive = new Regex($"^{user}'s");
-                Regex playerNameStart = new Regex($"{user}");
-                for(int i = 0; i < result.Count; ++i)
+                // Ensure results don't go out of bounds
+                for (int i = 0; i < round.Results.Count; ++i)
                 {
-                    // If result doesn't fit on one line, space it out
-                    if (result[i].Length > 30)
+                    if (round.Results[i].Length > 30)
                     {
-                        int lastSpace = result[i].Substring(0, 30).LastIndexOf(' ');
-                        result[i] = $"{result[i].Substring(0, lastSpace)}\n{result[i].Substring(lastSpace + 1)}";
-                    }
-                    
-                    // Do name swapping
-                    if (playerPosessive.IsMatch(result[i]))
-                    {
-                        result[i] = playerPosessive.Replace(result[i], "Your");
-                        SwapResultIndexWithStart(result, i);
-                    }
-                    else if (playerNameStart.IsMatch(result[i])) //Replace their name on passive actions (reloading or being shot)
-                    {
-                        result[i] = playerNameStart.Replace(result[i], i!=0?"You":"you");
-                        SwapResultIndexWithStart(result, i);
+                        int lastSpace = round.Results[i].Substring(0, 30).LastIndexOf(' ');
+                        round.Results[i] = $"{round.Results[i].Substring(0, lastSpace)}\n{round.Results[i].Substring(lastSpace + 1)}";
                     }
                 }
 
-                //Temporary displaying the result
-                ResultsText.Content = result.Aggregate((r1, r2) => r1 + '\n' + r2); //Store all round results
+                // Temporary displaying the result
+                ResultsText.Content = round.Results.Aggregate((r1, r2) => r1 + '\n' + r2); //Store all round results
                 EnableActionButtons();
 
                 if (health <= 0)
